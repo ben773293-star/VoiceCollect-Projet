@@ -123,4 +123,3 @@ CLOUDINARY_STORAGE = {
     'API_KEY': '971547724522531',      # À copier depuis la page "API Keys"
     'API_SECRET': 'hIVWykP2rnvOuKMmXKJ0OVFp38k' # À copier depuis la page "API Keys"
 }
-}

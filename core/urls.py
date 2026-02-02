@@ -20,11 +20,19 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
+    # Interface d'administration
     path('admin/', admin.site.urls),
-    path('', include('reports.urls')), # Redirige vers ton app MEAL
-    path('accounts/', include('django.contrib.auth.urls')), # Pour la connexion/déconnexion
+    
+    # Ton application de rapports (ex app_voice)
+    path('', include('reports.urls')), 
+    
+    # Système d'authentification par défaut de Django
+    path('accounts/', include('django.contrib.auth.urls')),
 ]
 
-# Cette ligne permet de servir les fichiers audios pendant le développement
+# Cette ligne permet de servir les fichiers audios et images
 if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+else:
+    # Configuration pour la production (Render)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

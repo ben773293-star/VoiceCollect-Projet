@@ -91,7 +91,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'cloudinary_storage',
     'cloudinary',
-    'app_voice',                      # Le nom de ton dossier d'application
+    'reports',                      # Le nom de ton dossier d'application
 ]
 
 # Configuration de Cloudinary

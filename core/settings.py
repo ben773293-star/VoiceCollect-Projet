@@ -83,10 +83,15 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 # --- CONFIGURATION DES FICHIERS MÉDIAS (AUDIOS) ---
 # On ajoute 'cloudinary_storage' et 'cloudinary' AVANT 'django.contrib.staticfiles'
 INSTALLED_APPS = [
-    'cloudinary_storage',
+    'django.contrib.admin',           # <-- Vérifie bien celle-ci
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary_storage',
     'cloudinary',
-    # ... tes autres apps (reports, etc.)
+    'app_voice',                      # Le nom de ton dossier d'application
 ]
 
 # Configuration de Cloudinary
@@ -120,6 +125,6 @@ DATABASES = {
     # Dans core/settings.py
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'dyfjvrwjr',
-    'API_KEY': '971547724522531',      # À copier depuis la page "API Keys"
-    'API_SECRET': 'hIVWykP2rnvOuKMmXKJ0OVFp38k' # À copier depuis la page "API Keys"
-}
+    'API_KEY': '971547724522531',
+    'API_SECRET': 'hiVwykP2rn... (ta clé complète)',
+} # <--- Assure-toi qu'il n'y a RIEN après cette accolade

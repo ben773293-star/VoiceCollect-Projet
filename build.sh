@@ -7,3 +7,4 @@ pip install -r requirements.txt
 
 # Appliquer les migrations (préparer la base de données)
 python manage.py migrate
+python manage.py createsuperuser --noinput --username admin --email ton@email.com

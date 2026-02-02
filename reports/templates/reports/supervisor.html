@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supervision SIG - VoiceCollect</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        body { background-color: #f8f9fa; }
+        .card-custom { border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        #map { height: 450px; border-radius: 15px; z-index: 1; }
+        .badge-urgent { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-dark bg-dark mb-4 shadow-sm">
+        <div class="container">
+            <span class="navbar-brand fw-bold"><i class="bi bi-map-fill"></i> DASHBOARD SIG & MEAL</span>
+            <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm">Déconnexion</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card card-custom mb-4">
+            <div class="card-body">
+                <h6 class="fw-bold text-muted mb-3"><i class="bi bi-geo-alt-fill text-danger"></i> Localisation des alertes (Burkina Faso)</h6>
+                <div id="map"></div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <div class="card card-custom p-3">
+                    <h6 class="fw-bold text-muted text-center">Répartition par Secteur</h6>
+                    <canvas id="sectorChart" data-labels='{{ labels|safe }}' data-values='{{ data|safe }}'></canvas>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="table-responsive bg-white p-3 rounded shadow-sm">
+                    <div class="d-flex justify-content-between mb-3">
+                        <h6 class="fw-bold text-muted">Derniers rapports</h6>
+                        <a href="{% url 'export_pdf' %}" class="btn btn-success btn-sm">Export PDF</a>
+                    </div>
+                    <table class="table table-sm small">
+                        <thead>
+                            <tr>
+                                <th>Agent</th>
+                                <th>Lieu</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in reports %}
+                            <tr>
+                                <td>{{ report.agent.username }}</td>
+                                <td>{{ report.location_detail }}</td>
+                                <td>{% if report.is_urgent %}<span class="badge bg-danger">Urgent</span>{% else %}Normal{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script id="reports-json-data" type="application/json">
+    [
+        {% for report in reports %}
+            {% if report.latitude and report.longitude %}
+            {
+                "lat": {{ report.latitude }},
+                "lng": {{ report.longitude }},
+                "agent": "{{ report.agent.username|escapejs }}",
+                "lieu": "{{ report.location_detail|escapejs }}",
+                "urgent": {% if report.is_urgent %}true{% else %}false{% endif %}
+            }{% if not forloop.last %},{% endif %}
+            {% endif %}
+        {% endfor %}
+    ]
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. Initialisation Carte
+            const map = L.map('map').setView([12.37, -1.53], 6);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+            // 2. Icônes personnalisées
+            const redIcon = new L.Icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+            });
+
+            // 3. Lecture des données depuis la boîte invisible
+            const dataContainer = document.getElementById('reports-json-data');
+            if (dataContainer) {
+                const reports = JSON.parse(dataContainer.textContent);
+                
+                reports.forEach(r => {
+                    const marker = L.marker([r.lat, r.lng], { icon: r.urgent ? redIcon : new L.Icon.Default() }).addTo(map);
+                    marker.bindPopup(`<b>Agent:</b> ${r.agent}<br><b>Lieu:</b> ${r.lieu}<br>Statut: ${r.urgent ? 'URGENT' : 'Normal'}`);
+                });
+            }
+
+            // 4. Graphique
+            const canvas = document.getElementById('sectorChart');
+            if (canvas) {
+                const labels = JSON.parse(canvas.getAttribute('data-labels').replace(/'/g, '"'));
+                const values = JSON.parse(canvas.getAttribute('data-values'));
+                new Chart(canvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{ data: values, backgroundColor: ['#0d6efd', '#ffc107', '#198754', '#dc3545'] }]
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
